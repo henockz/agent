@@ -11,7 +11,8 @@
     "paths": {
       "@core/*": ["core/*"],
       "@agent/*": ["core/agent/*"],
-      "@context/*": ["core/context/*"]
+      "@context/*": ["core/context/*"],
+      "@config/*": ["config/environment/*"]
     }
   },
   "include": ["**/*.ts"]

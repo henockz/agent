@@ -6,9 +6,9 @@ export class DefaultAgentContext {
     constructor(argv, env, cwd) {
         this.agentId = "Default";
         this.command = argv[0] ?? "help";
-        if (!env.OPENAI_API_KEY)
+        if (!env.openAiApiKey)
             throw new Error("OPENAI_API_KEY is not set");
-        this.apiKey = env.OPENAI_API_KEY;
+        this.apiKey = env.openAiApiKey;
         this.cwd = cwd;
     }
 }
