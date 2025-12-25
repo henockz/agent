@@ -1,5 +1,18 @@
-// core/agent/Agent.ts
+import { IntentAnalyzer } from "../services/IntentAnalyer.js";
 import OpenAI from "openai";
+import { ShoppingPlanBuilder } from "../services/ShoppingPlanBuilder.js";
+function printPlan(plan) {
+    console.log("\n=== AGENT PLAN ===");
+    console.log("Intent:", plan.intent);
+    console.log("Category:", plan.category);
+    console.log("\nResearch questions:");
+    plan.researchQuestions.forEach((q, i) => console.log(`  ${i + 1}. ${q}`));
+    console.log("\nPlanned search queries:");
+    plan.searchQueries.forEach((q, i) => console.log(`  ${i + 1}. ${q}`));
+    console.log("\nEvaluation criteria:");
+    plan.evaluationCriteria.forEach((c, i) => console.log(`  ${i + 1}. ${c}`));
+    console.log("==================\n");
+}
 export class Agent {
     context;
     client;
@@ -13,6 +26,14 @@ export class Agent {
         return this.client;
     }
     async run() {
+        const analyzer = new IntentAnalyzer();
+        const intent = this.context.command;
+        const category = analyzer.analyze(intent);
+        console.log("[agent] intent:", intent);
+        console.log("[agent] category:", category);
+        const builder = new ShoppingPlanBuilder();
+        const plan = builder.build(intent);
+        printPlan(plan);
         const handlers = {
             help: async () => ({
                 kind: "static",
