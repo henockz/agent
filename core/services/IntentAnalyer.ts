@@ -2,9 +2,9 @@ export type IntentCategory =   "apparel"  | "vehicle"  | "food"  | "unknown";
 
 export class IntentAnalyzer
 {
-    analyze(intent: string): IntentCategory
+    analyze(input: string): IntentCategory
     {
-        const normalized = intent.toLowerCase();
+        const normalized = input.toLowerCase();
         
         if (normalized.includes("sweater") || normalized.includes("shirt"))
         {

@@ -1,103 +1,62 @@
 // core/agent/Agent.ts
-import type { AgentContext } from "@context/AgentContext.js";
 import { IntentAnalyzer } from "../services/IntentAnalyer.js";
+import { AgentResult } from "../types/AgentResult.js";
+import { CommandHandler } from "../types/CommandHanler.js";
+import { RuntimeConfig } from "../types/RuntimeConfig.js";
 
-import OpenAI from "openai";
-import { ShoppingPlanBuilder } from "../services/ShoppingPlanBuilder.js";
 
-function printPlan(plan: {
-  intent: string;
-  category: string;
-  researchQuestions: string[];
-  searchQueries: string[];
-  evaluationCriteria: string[];
-}) {
-  console.log("\n=== AGENT PLAN ===");
-  console.log("Intent:", plan.intent);
-  console.log("Category:", plan.category);
+const commands: Record<string, CommandHandler> = {
+  echo: {
+    description: "Echo back the provided text",
+    run: (args) => ({
+      command: "echo",
+      output: args.join(" "),
+    }),
+  },
 
-  console.log("\nResearch questions:");
-  plan.researchQuestions.forEach((q, i) =>
-    console.log(`  ${i + 1}. ${q}`)
-  );
+  "analyze-intent": {
+      description: "Analyze text and classify intent",
+      run: (args) => {
+        if (args.length === 0) {
+          throw new Error("analyze-intent requires text input");
+        }
 
-  console.log("\nPlanned search queries:");
-  plan.searchQueries.forEach((q, i) =>
-    console.log(`  ${i + 1}. ${q}`)
-  );
+        const input = args.join(" ");
+        const analyzer = new IntentAnalyzer();
+        const category = analyzer.analyze(input);
 
-  console.log("\nEvaluation criteria:");
-  plan.evaluationCriteria.forEach((c, i) =>
-    console.log(`  ${i + 1}. ${c}`)
-  );
+        return {
+          command: "analyze-intent",
+          output: { input, category },
+        };
+      },
+    },
 
-  console.log("==================\n");
-}
+
+  help: {
+    description: "List available commands",
+    run: () => ({
+      command: "help",
+      output: Object.entries(commands)
+      .map(([name, cmd]) => ({ name, description: cmd.description }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+      }),
+    },
+};
 
 export class Agent {
-  private readonly context: AgentContext;
-  private client?: OpenAI;
+  constructor(private readonly config: RuntimeConfig) {}
 
-  constructor(context: AgentContext) {
-    this.context = context;
-  }
-
-  private getClient(): OpenAI {
-    if (!this.client) {
-      this.client = new OpenAI({ apiKey: this.context.apiKey });
-    }
-    return this.client;
-  }
-
-  
-
-  async run(): Promise<void> {
-    const analyzer = new IntentAnalyzer();
-    const intent = this.context.command;
-    const category=analyzer.analyze(intent);
-    console.log("[agent] intent:", intent);
-    console.log("[agent] category:", category);
-    const builder = new ShoppingPlanBuilder();
-    const plan = builder.build(intent);
-    printPlan(plan);
-    
-
-
-
-
-    const handlers: Record<string,() => Promise<{ kind: "static" | "model"; text: string }>> = {
-      help: async () => ({
-        kind: "static",
-        text: `Available commands:
-- intro   Introduce the agent
-- help    Show this help message`,
-      }),
-
-      intro: async () => ({
-        kind: "model",
-        text: `You are an agent.
-Your id is "${this.context.agentId}".
-From here on out, your name is "GooZ".
-Introduce yourself in one short sentence.`,
-      }),
-    };
-
-    const command = this.context.command;
-    const handler = handlers[command] ?? handlers["help"];
-    const result = await handler();
-
-    if (result.kind === "static") {
-      console.log(result.text);
-      return;
+  async run(command: string | undefined, args: string[]): Promise<AgentResult> {
+    if (!command) {
+      throw new Error("No command provided");
     }
 
-    const client = this.getClient();
+    const handler = commands[command];
+    if (!handler) {
+      throw new Error(`Unknown command: ${command}`);
+    }
+    return await handler.run(args);
 
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: result.text,
-    });
-
-    console.log(response.output_text);
   }
 }

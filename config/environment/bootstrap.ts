@@ -1,8 +1,8 @@
 import { config } from "dotenv";
 
 /* 1️determine environment */
-export const NODE_ENV = process.env.NODE_ENV ?? "development";
-export const ENVIRONMENT = NODE_ENV.toLowerCase();
+const NODE_ENV = process.env.NODE_ENV ?? "development";
+const ENVIRONMENT = NODE_ENV.toLowerCase();
 
 /* 2 validate environment name */
 const VALID_ENVIRONMENTS = ["development", "test", "production"] as const;
@@ -14,7 +14,7 @@ if (!VALID_ENVIRONMENTS.includes(ENVIRONMENT as any)) {
 }
 
 /* 3 load env file */
-config({ path: `.env.${ENVIRONMENT}` });
+config({ path: `./config/environment/env/.env.${ENVIRONMENT}` });
 
 /* 4 validate required variables */
 const REQUIRED_ENV_VARS = ["OPENAI_API_KEY"] as const;

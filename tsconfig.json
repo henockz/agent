@@ -9,10 +9,12 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@config/*":  ["config/environment/*"],
-      "@agent/*":   ["core/agent/*"],
-      "@context/*": ["core/context/*"],      
-      "@services/*":["core/services/*"]
+      "@config/*"   : ["config/environment/*"],
+      "@agent/*"    : ["core/agent/*"],
+      "@context/*"  : ["core/context/*"],      
+      "@services/*" : ["core/services/*"],
+      "@types/*"    : ["core/types/*"],
+      
     }
   },
   "include": ["**/*.ts"]

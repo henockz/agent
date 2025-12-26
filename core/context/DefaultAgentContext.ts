@@ -1,4 +1,4 @@
-import { runtimeConfig } from "@config/index.js";
+import { runtimeConfig } from "@config/bootstrap.js";
 import { AgentContext } from "./AgentContext.js";
 
 

@@ -1,6 +1,6 @@
 export class IntentAnalyzer {
-    analyze(intent) {
-        const normalized = intent.toLowerCase();
+    analyze(input) {
+        const normalized = input.toLowerCase();
         if (normalized.includes("sweater") || normalized.includes("shirt")) {
             return "apparel";
         }

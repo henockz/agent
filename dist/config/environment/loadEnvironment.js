@@ -1,7 +1,7 @@
 import { Agent } from "@agent/Agent.js";
-import "./bootstrap.js";
+import { runtimeConfig } from "./bootstrap.js";
 const [, , command, ...args] = process.argv;
-const agent = new Agent();
+const agent = new Agent(runtimeConfig);
 try {
     await agent.run(command, args);
 }
