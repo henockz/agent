@@ -1,6 +1,7 @@
-node_modules
+node_modules/
 .env
 .DS_Store
 .env.development
 .env.test
 .env.production
+dist/

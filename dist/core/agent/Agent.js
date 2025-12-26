@@ -1,63 +1,34 @@
 // core/agent/Agent.ts
-import { IntentAnalyzer } from "../services/IntentAnalyer.js";
-const commands = {
-    echo: {
-        description: "Echo back the provided text",
-        run: (args, _ctx) => ({
-            command: "echo",
-            output: args.join(" "),
-        }),
-    },
-    "analyze-intent": {
-        description: "Analyze text and classify intent",
-        run: (args, _ctx) => {
-            if (args.length === 0) {
-                throw new Error("analyze-intent requires text input");
-            }
-            const input = args.join(" ");
-            const analyzer = new IntentAnalyzer();
-            const category = analyzer.analyze(input);
-            return {
-                command: "analyze-intent",
-                output: { input, category },
-            };
-        },
-    },
-    help: {
-        description: "List available commands",
-        run: (_args, _ctx) => ({
-            command: "help",
-            output: Object.entries(commands)
-                .map(([name, cmd]) => ({ name, description: cmd.description }))
-                .sort((a, b) => a.name.localeCompare(b.name)),
-        }),
-    },
-    "ping-openai": {
-        description: "Ping the OpenAI API (sanity check)",
-        run: async (_args, ctx) => {
-            return {
-                command: "ping-openai",
-                output: {
-                    environment: ctx.environment,
-                    status: "ok"
-                }
-            };
-        }
-    },
-};
+import { commands } from "../commands/index.js";
 export class Agent {
     config;
     constructor(config) {
         this.config = config;
     }
     async run(command, args) {
+        const result = {
+            command: command ?? "",
+            status: "ok",
+            output: {},
+        };
         if (!command) {
-            throw new Error("No command provided");
+            result.status = "error";
+            result.message = "No command provided";
+            return result;
         }
         const handler = commands[command];
         if (!handler) {
-            throw new Error(`Unknown command: ${command}`);
+            result.status = "error";
+            result.message = `Unknown command: ${command}`;
+            return result;
         }
-        return await handler.run(args, this.config);
+        try {
+            return await handler.run(args, this.config);
+        }
+        catch (err) {
+            result.status = "error";
+            result.message = err.message;
+            return result;
+        }
     }
 }

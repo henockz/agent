@@ -1,12 +1,10 @@
-import { Agent } from "../core/agent/Agent.js";
 import { runtimeConfig } from "../config/environment/bootstrap.js";
+import { Agent } from "../core/agent/Agent.js";
 const [, , command, ...args] = process.argv;
 const agent = new Agent(runtimeConfig);
-try {
-    const result = await agent.run(command, args);
-    console.log(result.output);
-}
-catch (err) {
-    console.error(err.message);
+const result = await agent.run(command, args);
+if (result.status === "error") {
+    console.error(result.message ?? "Unknown error");
     process.exit(1);
 }
+console.log(result.output);
