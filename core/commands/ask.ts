@@ -13,11 +13,9 @@ export const ask: CommandHandler = {
         };
     try {
       if (args.length === 0) {
-        result.output =
-        {
-          status: "error",
-          message: "ask requires a prompt"
-        }
+        result.status="error";
+        result.message= "ask requires a prompt"
+        
         return result;
       }
 
@@ -34,8 +32,7 @@ export const ask: CommandHandler = {
     }
     catch (err) {
       result.status = "error";
-      result.message = (err as Error).message;
-      
+      result.message = (err as Error).message;      
     }
     return result;
   },
