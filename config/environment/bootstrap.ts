@@ -1,3 +1,4 @@
+import { OpenAILLMClient } from "@llm/OpenLLMClient.js";
 import { config } from "dotenv";
 
 /* 1️determine environment */
@@ -29,4 +30,5 @@ for (const key of REQUIRED_ENV_VARS) {
 export const runtimeConfig = {
   environment: ENVIRONMENT,
   openAiApiKey: process.env.OPENAI_API_KEY!,
+  llm:new OpenAILLMClient(process.env.OPENAI_API_KEY!),
 } as const;

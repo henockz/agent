@@ -3,6 +3,9 @@ export class ShoppingPlanBuilder {
     build(intent) {
         const analyzer = new IntentAnalyzer();
         const category = analyzer.analyze(intent);
+        if (category === "unknown") {
+            throw new Error("Cannot build shopping plan for unknown intent");
+        }
         let researchQuestions = [];
         let evaluationCriteria = [];
         switch (category) {
@@ -48,15 +51,6 @@ export class ShoppingPlanBuilder {
                     "Value for price"
                 ];
                 break;
-            default:
-                researchQuestions = [
-                    "What factors determine quality for this item?",
-                    "What price range indicates good value?"
-                ];
-                evaluationCriteria = [
-                    "Overall quality",
-                    "Value for price"
-                ];
         }
         const searchQueries = researchQuestions.map(q => `${intent} ${q}`);
         return {

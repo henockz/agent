@@ -9,13 +9,16 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@config/*"   : ["config/environment/*"],
+      "@llm/*"      : ["core/llm/*"],
+      "@commands/*" : ["core/commands/*"],
+      "@config/*"   : ["config/*"],
       "@agent/*"    : ["core/agent/*"],
-      "@context/*"  : ["core/context/*"],      
+      "@tools/*"    : ["core/tools/*"],      
       "@services/*" : ["core/services/*"],
       "@types/*"    : ["core/types/*"],
       
     }
   },
-  "include": ["**/*.ts"]
+ "include": ["**/*.ts"]
+
 }

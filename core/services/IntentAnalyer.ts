@@ -1,26 +1,18 @@
-export type IntentCategory =   "apparel"  | "vehicle"  | "food"  | "unknown";
+import { Categories } from "@config/categories.js";
+import type { IntentCategory } from "../types/IntentCategories.js";
 
-export class IntentAnalyzer
-{
-    analyze(input: string): IntentCategory
-    {
-        const normalized = input.toLowerCase();
-        
-        if (normalized.includes("sweater") || normalized.includes("shirt"))
-        {
-            return "apparel";
-        }
+export class IntentAnalyzer {
+  analyze(input: string): IntentCategory | "unknown" {
+    const normalized = input.toLowerCase();
 
-        if (normalized.includes("audi") || normalized.includes("car"))
-        {
-            return "vehicle";
-        }
+    for (const category in Categories) {
+      const keywords = Categories[category as IntentCategory];
 
-        if (normalized.includes("pasta") || normalized.includes("food"))
-        {
-            return "food";
-        }
+      if (keywords.some(keyword => normalized.includes(keyword))) {
+        return category as IntentCategory;
+      }
+    }
 
-        return "unknown";
+    return "unknown";
   }
 }

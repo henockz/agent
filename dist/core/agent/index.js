@@ -1,1 +1,1 @@
-export { Agent } from "@agent/Agent.js";
+export { Agent } from "./Agent.js";

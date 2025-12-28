@@ -1,14 +1,12 @@
+import { Categories } from "../../config/categories.js";
 export class IntentAnalyzer {
     analyze(input) {
         const normalized = input.toLowerCase();
-        if (normalized.includes("sweater") || normalized.includes("shirt")) {
-            return "apparel";
-        }
-        if (normalized.includes("audi") || normalized.includes("car")) {
-            return "vehicle";
-        }
-        if (normalized.includes("pasta") || normalized.includes("food")) {
-            return "food";
+        for (const category in Categories) {
+            const keywords = Categories[category];
+            if (keywords.some(keyword => normalized.includes(keyword))) {
+                return category;
+            }
         }
         return "unknown";
     }

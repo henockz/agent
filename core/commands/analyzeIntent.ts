@@ -1,10 +1,11 @@
 import { IntentAnalyzer } from "../services/IntentAnalyer.js";
 import type { AgentResult } from "../types/AgentResult.js";
+import type { CommandContext } from "../types/CommandContext.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
 
 export const analyzeIntent: CommandHandler = {
       description: "Analyze text and classify intent",
-  run: (args, _ctx) => {
+  run: async (args:string[], _ctx:CommandContext) => {
     let result: AgentResult =
     { 
       status: "ok",

@@ -1,9 +1,10 @@
+import { CommandContext } from "../types/CommandContext.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
 
 
 export const echo: CommandHandler = {
   description: "Echo back the provided text",
-  run: (args) => ({
+  run: async (args: string[], _ctx: CommandContext) => ({
     status: "ok",
     command: "echo",
     output: args.join(" "),

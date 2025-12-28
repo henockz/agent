@@ -1,9 +1,15 @@
 // core/agent/Agent.ts
 import { commands } from "../commands/index.js";
 export class Agent {
+    llm;
     config;
-    constructor(config) {
+    constructor(config, llm) {
+        this.llm = llm;
         this.config = config;
+    }
+    async suggestShoppingItem(intent) {
+        const prompt = `Suggest one shopping item for this intent: ${intent}`;
+        return await this.llm.complete(prompt);
     }
     async run(command, args) {
         const result = {
@@ -23,7 +29,7 @@ export class Agent {
             return result;
         }
         try {
-            return await handler.run(args, this.config);
+            return await handler.run(args, { ...this.config, llm: this.llm });
         }
         catch (err) {
             result.status = "error";
