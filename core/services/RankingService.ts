@@ -1,35 +1,20 @@
 // services/RankingService.ts
 import type { SearchResult } from "../types/SearchResult.js";
+ 
 
 export class RankingService {
-  rank(
-  results: SearchResult[],
-  topN = 3,
-  preference: "budget" | "premium" = "premium"
-): SearchResult[] {
+  rank( items: SearchResult[], limit: number, preference: "budget" | "premium"): SearchResult[] {
+    const scored = items.map(r => {
+      const score =
+        preference === "budget"
+          ? r.rating * 5 - r.price * 2
+          : r.rating * 25 - r.price * 0.1;
+      return { r, score };
+    });
 
-  const maxPrice = Math.max(...results.map(r => r.price));
-
-  const scored = results.map(r => {
-    const normalizedPrice = r.price / maxPrice; // 0..1
-
-    let score = 0;
-    if (preference === "budget") {
-      score = r.rating * 5 - normalizedPrice * 10;
-    } 
-    else {
-      
-      score = r.rating * 20 - normalizedPrice * 5;
-      console.log(`premium score: ${score}`)
-    }
-
-    return { r, score };
-  });
-
-  return scored
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topN)
-    .map(x => x.r);
-}
-
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(x => x.r);
+  }
 }

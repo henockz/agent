@@ -1,34 +1,33 @@
-import OpenAI from "openai";
 import type { AgentResult } from "../types/AgentResult.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
 
 export const pingOpenAI: CommandHandler = {
-  description: "Ping the OpenAI API (sanity check)",
-  run: async (_args, ctx) =>
-    {
-      let result: AgentResult=
-      {
-          status:"ok",
-          command: "ping-openai",
-          output: {}
-        };
+  description: "Ping the LLM (sanity check)",
 
-      try {
-        const client = new OpenAI({apiKey: ctx.openAiApiKey});
+  run: async (_args, ctx) => {
+    const result: AgentResult = {
+      status: "ok",
+      command: "ping-openai",
+      output: {}
+    };
 
-        const models = await client.models.list();
-        result.output = {           
-          environment: ctx.environment,
-          modelCount: models.data.length,
-        }
-      }
-      catch (err) {
-        result.output = {
-          status: "error",
-          environment: ctx.environment,
-          message: (err as Error).message
-        }
-      }
-      return result;
+    try {
+      // simplest possible sanity check
+      await ctx.llm.complete("Respond with the word OK.");
+
+      result.output = {
+        environment: ctx.environment,
+        status: "LLM reachable"
+      };
     }
-  } 
+    catch (err) {
+      result.status = "error";
+      result.output = {
+        environment: ctx.environment,
+        message: (err as Error).message
+      };
+    }
+
+    return result;
+  }
+};

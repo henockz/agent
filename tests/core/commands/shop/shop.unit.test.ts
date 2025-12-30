@@ -2,19 +2,18 @@ import assert from "node:assert";
 import test from "node:test";
 
 import { shop } from "@commands/shop.js";
-import type { LLMClient } from "@llm/LLMClient.js";
-
-class FakeLLM implements LLMClient {
-  lastPrompt = "";
-
-  async complete(prompt: string): Promise<string> {
-    this.lastPrompt = prompt;
-    return "fake suggestion";
-  }
-}
-
+import { InMemorySearchProvider } from "@tools/providers/InMemorySearchProvider.js";
+import { InMemoryLLMClient } from "tests/helpers/InMemoryLLMClient.js";
+ 
 test("shop returns ranked search results", async () => {
-  const ctx = {};
+  const ctx = {
+    enableRanking: true,
+    rankingPreference: "premium",
+    providers: {
+      search:new InMemorySearchProvider()
+    }
+  }
+
 
   const result = await shop.run(["buy", "sweater"], ctx as any);
 
@@ -27,10 +26,19 @@ test("shop returns ranked search results", async () => {
   assert.strictEqual(output.results[0].title, "Premium Jogging Suit");
 });
 
-test("shop ranks results and adds LLM summary", async () => {
-  const fakeLLM = new FakeLLM();
 
-  const ctx = { llm: fakeLLM };
+test("shop ranks results and adds LLM summary", async () => {
+  const inMemory = new InMemoryLLMClient("fake suggestion");
+
+  const ctx = {
+    llm: inMemory,
+    enableResearch: false,
+    enableRanking: true,
+    rankingPreference: "premium",
+    providers: {
+      search: new InMemorySearchProvider(),
+    },
+  };
 
   const result = await shop.run(["buy", "sweater"], ctx as any);
 
@@ -44,10 +52,17 @@ test("shop ranks results and adds LLM summary", async () => {
 
   assert.ok(output.results.length > 0);
   assert.strictEqual(output.summary, "fake suggestion");
-  assert.ok(fakeLLM.lastPrompt.includes("Options:"));
+  assert.ok(inMemory.lastPrompt.includes("Options:"));
 });
 test("shop works without LLM and skips summary", async () => {
-  const ctx = {}; // no llm provided
+   const ctx = {
+     
+     
+    providers: {
+      search:new InMemorySearchProvider()
+    }
+  }
+
 
   const result = await shop.run(["buy", "sweater"], ctx as any);
 
@@ -64,7 +79,13 @@ test("shop works without LLM and skips summary", async () => {
 });
 
 test("shop applies budget preference to ranking", async () => {
-  const ctx = {}; // no LLM needed
+  const ctx = {
+    enableRanking: true,
+     
+    providers: {
+      search:new InMemorySearchProvider()
+    }
+  }
 
   const result = await shop.run(["buy", "sweater", "budget"], ctx as any);
 
@@ -77,3 +98,4 @@ test("shop applies budget preference to ranking", async () => {
   // budget should favor the cheapest option
   assert.strictEqual(output.results[0].price, 29.99);
 });
+ 

@@ -16,7 +16,7 @@
       "@tools/*"    : ["core/tools/*"],      
       "@services/*" : ["core/services/*"],
       "@types/*"    : ["core/types/*"],
-      
+      "@helpers/*"  : ["core/helpers/*"]
     }
   },
  "include": ["**/*.ts"]

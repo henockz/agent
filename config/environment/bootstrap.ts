@@ -29,6 +29,6 @@ for (const key of REQUIRED_ENV_VARS) {
 /* 5 project into runtime config */
 export const runtimeConfig = {
   environment: ENVIRONMENT,
-  openAiApiKey: process.env.OPENAI_API_KEY!,
-  llm:new OpenAILLMClient(process.env.OPENAI_API_KEY!),
+  enableResearch: true, 
+  llm: new OpenAILLMClient(process.env.OPENAI_API_KEY!),
 } as const;

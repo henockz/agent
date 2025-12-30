@@ -1,8 +1,11 @@
+import { Categories } from "@config/categories.js";
+import { generateResearch } from "@llm/generateResearch.js";
 import { RankingService } from "@services/RankingService.js";
 import { ShoppingPolicyService } from "@services/ShoppingPolicyService.js";
-import { SearchTool } from "@tools/SearchTool.js";
+
 import type { AgentResult } from "../types/AgentResult.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
+
 
 export const shop: CommandHandler = {
   description: "Suggest shopping items",
@@ -13,7 +16,7 @@ export const shop: CommandHandler = {
       command: "shop",
       output: {},
     };
-
+ 
     if (args.length === 0) {
       result.status = "error";
       result.message = "shop requires intent text";
@@ -21,7 +24,8 @@ export const shop: CommandHandler = {
     }
 
     const input = args.join(" ").toLowerCase();
-    const preference = input.includes("budget") ? "budget" : "premium";
+    const preference = ctx.rankingPreference ?? (input.includes("budget") ? "budget" : "premium");
+    
 
     // 1 policy
     const policy = new ShoppingPolicyService();
@@ -33,11 +37,35 @@ export const shop: CommandHandler = {
       return result;
     }
 
-    // 2 search (fake for now)
-    const searchTool = new SearchTool();
-    const candidates = searchTool.search(input);
+      
+      let research;
+     
+      if (ctx.enableResearch && ctx.llm && decision.category) {
+        const categoryConfig = Categories[decision.category] as {
+          research: {
+            baseQuestions: readonly string[];
+            baseQueries: readonly string[];
+          };
+        
+        }
+
+        research = await generateResearch(ctx.llm,input,decision.category,categoryConfig.research.baseQuestions,categoryConfig.research.baseQueries);
+      }
+
+    // 2 search 
+    const searchProvider = ctx.providers?.search;
+
+    if (!searchProvider) {
+    result.status = "error";
+    result.message = "Search provider not configured";
+    return result;
+    }
+
+    const candidates = await searchProvider.search(input);
+
 
     // 3 rank
+    
     const rankingService = new RankingService();
     const ranked = rankingService.rank(candidates, 3,preference);
 
@@ -64,6 +92,7 @@ export const shop: CommandHandler = {
       input,
       results: ranked,
       summary,
+      research
     };
  
   return result;

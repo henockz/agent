@@ -12,7 +12,7 @@ export class ShoppingPolicyService {
         if (category === 'unknown') {
             return {
                 allowed: false,
-                reason: 'Intent is not shoppable'
+                reason: `Intent ${input} is not shoppable`
             }
         }
         return {

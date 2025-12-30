@@ -1,51 +1,85 @@
+
 // core/agent/Agent.ts
 import { commands } from "@commands/index.js";
-import { LLMClient } from "@llm/LLMClient.js";
-import { AgentResult } from "../types/AgentResult.js";
+import { LLMSearchProvider } from "@tools/providers/LLMSearchProvider.js";
+import type { AgentResult } from "../types/AgentResult.js";
 import { RuntimeConfig } from "../types/RuntimeConfig.js";
+import { ExecutionContext } from "./ExecutionContext.js";
+/*
+import { RankingService } from "@services/RankingService.js";
 
+import { SearchTool } from "@tools/SearchTool.js";
+import { IntentAnalyzer } from "../services/IntentAnalyer.js";
+
+import type { IntentCategory } from "../types/IntentCategories.js";
+
+import type { SearchResult } from "../types/SearchResult.js";
+
+*/
 export class Agent {
-  private readonly llm: LLMClient;
   private readonly config: RuntimeConfig;
 
-
-  constructor(config: RuntimeConfig, llm: LLMClient) {
-    this.llm = llm;
+  constructor(config: RuntimeConfig) {
     this.config = config;
   }
 
-  async suggestShoppingItem(intent: string): Promise<string> {
-  const prompt = `Suggest one shopping item for this intent: ${intent}`;
-  return await this.llm.complete(prompt);
-}
+  private trace(path: string): void {
+    console.log(`[agent] path=${path}`);
+  }
 
-  async run(command: string | undefined, args: string[]): Promise<AgentResult> {
-    const result: AgentResult = {
-      command: command ?? "",
-      status: "ok",
-      output: {},
+  private buildContext(): ExecutionContext {
+    return {
+      useResearch: this.config.enableResearch === true,
+      useRanking: this.config.enableRanking === true,
+      preference: this.config.rankingPreference ?? "premium",
+      telemetry: this.config.enableTelemetry === true,
     };
+  }
+
+  async run(command: string, args: string[]): Promise<AgentResult> {
+    const context = this.buildContext();
+
+    if (context.telemetry) {
+      const path = this.config.enableResearch
+        ? (this.config.enableRanking ? "search+rank" : "search")
+        : "analyze";
+      this.trace(path);
+    }
 
     if (!command) {
-      result.status = "error";
-      result.message = "No command provided";
-      return result;
+      return {
+        command: "",
+        status: "error",
+        message: "No command provided",
+        output: null,
+      };
     }
 
     const handler = commands[command];
     if (!handler) {
-      result.status = "error";
-      result.message = `Unknown command: ${command}`;
-      return result;
+      return {
+        command,
+        status: "error",
+        message: `Unknown command: ${command}`,
+        output: null,
+      };
     }
 
     try {
-      return await handler.run(args, { ...this.config, llm: this.llm });
-
+      return await handler.run(args, {
+        ...this.config,
+        llm: this.config.llm,
+        providers: {
+          search: new LLMSearchProvider(this.config.llm),
+        },
+      });
     } catch (err) {
-      result.status = "error";
-      result.message = (err as Error).message;
-      return result;
+      return {
+        command,
+        status: "error",
+        message: (err as Error).message,
+        output: null,
+      };
     }
   }
 }

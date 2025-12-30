@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import type { AgentResult } from "../types/AgentResult.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
 export const ask: CommandHandler = {
@@ -19,16 +18,8 @@ export const ask: CommandHandler = {
         return result;
       }
 
-      const prompt = args.join(" ");
-
-      const client = new OpenAI({apiKey: ctx.openAiApiKey});
-
-      const response = await client.responses.create({
-        model: "gpt-4.1-mini",
-        input: prompt,
-      });
-      result.output = response.output_text
-       
+      const prompt = args.join(" ");       
+      result.output = await ctx.llm.complete(prompt);
     }
     catch (err) {
       result.status = "error";
