@@ -1,25 +1,14 @@
-
-// core/agent/Agent.ts
+//core/agent/Agent.ts
 import { commands } from "@commands/index.js";
+import type { AgentResult } from "@core/types/AgentResult.js";
+import type { CommandContext } from "@core/types/CommandContext.js";
 import { LLMSearchProvider } from "@tools/providers/LLMSearchProvider.js";
-import type { AgentResult } from "../types/AgentResult.js";
-import { RuntimeConfig } from "../types/RuntimeConfig.js";
 import { ExecutionContext } from "./ExecutionContext.js";
-/*
-import { RankingService } from "@services/RankingService.js";
 
-import { SearchTool } from "@tools/SearchTool.js";
-import { IntentAnalyzer } from "../services/IntentAnalyer.js";
-
-import type { IntentCategory } from "../types/IntentCategories.js";
-
-import type { SearchResult } from "../types/SearchResult.js";
-
-*/
 export class Agent {
-  private readonly config: RuntimeConfig;
+  private readonly config: CommandContext;
 
-  constructor(config: RuntimeConfig) {
+  constructor(config: CommandContext) {
     this.config = config;
   }
 
@@ -66,12 +55,13 @@ export class Agent {
     }
 
     try {
+      const searchProvider =
+        this.config.providers?.search ?? new LLMSearchProvider(this.config.llm);
+
       return await handler.run(args, {
         ...this.config,
         llm: this.config.llm,
-        providers: {
-          search: new LLMSearchProvider(this.config.llm),
-        },
+        providers: { search: searchProvider },
       });
     } catch (err) {
       return {

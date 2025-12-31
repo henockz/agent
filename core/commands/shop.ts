@@ -1,3 +1,4 @@
+//core/commands/shop.ts
 import { Categories } from "@config/categories.js";
 import { generateResearch } from "@llm/generateResearch.js";
 import { RankingService } from "@services/RankingService.js";
@@ -60,8 +61,9 @@ export const shop: CommandHandler = {
     result.message = "Search provider not configured";
     return result;
     }
-
     const candidates = await searchProvider.search(input);
+    console.log("[shop] candidates:", candidates.length);
+
 
 
     // 3 rank
@@ -79,12 +81,13 @@ export const shop: CommandHandler = {
       const category = decision.category!;
        
       summary = await ctx.llm.complete(
-        `In one concise sentence, explain why the top-ranked item is the best ${preference} choice among the available ${category} options.
+      `In one concise sentence, explain why the top-ranked item is the best choice among the available ${category} options.
       Focus only on rating and price comparison.
 
       Options:
       ${lines}`
       );
+
 
     }
 

@@ -1,3 +1,4 @@
+//core/types/RuntimeConfig.ts
 import { LLMClient } from "@llm/LLMClient.js";
 
 export type RuntimeConfig = {

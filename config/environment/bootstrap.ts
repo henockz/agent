@@ -1,4 +1,7 @@
+//config/environment/bootstrap.ts
+import type { CommandContext } from "@core/types/CommandContext.js";
 import { OpenAILLMClient } from "@llm/OpenLLMClient.js";
+import { SerpApiGoogleShoppingProvider } from "@tools/providers/SerpApiGoogleShoppingProvider.js";
 import { config } from "dotenv";
 
 /* 1️determine environment */
@@ -31,4 +34,12 @@ export const runtimeConfig = {
   environment: ENVIRONMENT,
   enableResearch: true, 
   llm: new OpenAILLMClient(process.env.OPENAI_API_KEY!),
+
 } as const;
+
+export const commandContext: CommandContext = {
+  ...runtimeConfig,
+  providers: process.env.SERPAPI_API_KEY
+    ? { search: new SerpApiGoogleShoppingProvider({ apiKey: process.env.SERPAPI_API_KEY }) }
+    : undefined,
+};

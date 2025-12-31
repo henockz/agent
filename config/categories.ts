@@ -1,7 +1,7 @@
 // config/categories.ts
 export const Categories = {
   apparel: {
-    keywords: ["shirt", "sweater"],
+    keywords: ["shirt", "sweater","beanie"],
     research: {
       baseQueries: [
         "material quality",
