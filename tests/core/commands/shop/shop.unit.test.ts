@@ -54,6 +54,8 @@ test("shop ranks results and adds LLM summary", async () => {
   assert.strictEqual(output.summary, "fake suggestion");
   assert.ok(inMemory.lastPrompt.includes("Options:"));
 });
+
+
 test("shop works without LLM and skips summary", async () => {
    const ctx = {
      
