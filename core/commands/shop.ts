@@ -120,9 +120,16 @@ export const shop: CommandHandler = {
       };
     }
 
-    const purchaseResult = await provider.purchase(
-      buildPurchaseRequest(intent, product)
-    );
+    if (!intent.confirmationToken) {
+      return {
+        command: "shop",
+        status: "error",
+        output: "Purchase requires explicit confirmation",
+      };
+    }
+
+
+    const purchaseResult = await provider.purchase(buildPurchaseRequest(intent, product));
 
     return mapPurchaseResult(purchaseResult);
   },
