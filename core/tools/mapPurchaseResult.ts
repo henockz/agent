@@ -8,7 +8,7 @@ export function mapPurchaseResult(result: PurchaseResult): AgentResult {
         output: {},
     };
 
-    if (result.status === "success") {
+    if (result.status === "ok") {
         response.output = {
             orderId: result.orderId,
             chargedAmount: result.chargedAmount,

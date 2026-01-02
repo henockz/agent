@@ -4,9 +4,8 @@ import { IntentAnalyzer } from "./IntentAnalyer.js";
 export type ShoppingPlan = {
   intent: string;
   category: IntentCategory;
-  researchQuestions: string[];
+  dimensions: string[];
   searchQueries: string[];
-  evaluationCriteria: string[];
 };
 
 export class ShoppingPlanBuilder {
@@ -17,20 +16,20 @@ export class ShoppingPlanBuilder {
     if (category === "unknown") {
       throw new Error("Cannot build shopping plan for unknown intent");
     }
-      const categoryConfig = Categories[category as IntentCategory];
 
-const researchQuestions = [...categoryConfig.research.baseQuestions];
-const evaluationCriteria = [...categoryConfig.research.baseQueries];
+    const categoryConfig = Categories[category];
 
-const searchQueries = researchQuestions.map(q => `${intent} ${q}`);
+    const dimensions = Object.keys(categoryConfig.dimensions);
 
-return {
-  intent,
-  category,
-  researchQuestions,
-  searchQueries,
-  evaluationCriteria
-};
+    const searchQueries = dimensions.map(
+      d => `${intent} ${d.replace("_", " ")}`
+    );
 
+    return {
+      intent,
+      category,
+      dimensions,
+      searchQueries,
+    };
   }
 }

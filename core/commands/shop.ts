@@ -2,7 +2,6 @@ import { RankingService } from "@services/RankingService.js";
 import { buildPurchaseRequest } from "@tools/buildPurchaseReqest.js";
 import { mapPurchaseResult } from "@tools/mapPurchaseResult.js";
 import { parseShopIntent } from "@tools/parseShopIntent.js";
-
 import type { AgentResult } from "../types/AgentResult.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
 
@@ -33,7 +32,7 @@ export const shop: CommandHandler = {
       };
     }
 
-    // 4. Rank (RESTORED — this is what the test needs)
+    // 4. Rank
     const preference =
       ctx.rankingPreference ??
       (intent.query.includes("budget") ? "budget" : "premium");
@@ -41,7 +40,12 @@ export const shop: CommandHandler = {
     const rankingService = new RankingService();
     const results = rankingService.rank(candidates, 3, preference);
 
+  // 5. Reasoning (to be produced as part of ExecutionPlan)
+  // Intentionally empty until ExecutionPlan is introduced
+  let reasoning: string | undefined;
 
+ 
+    // 6. Optional LLM summary
     let summary: string | undefined;
 
     if (ctx.llm) {
@@ -54,40 +58,53 @@ export const shop: CommandHandler = {
 
       summary = await ctx.llm.complete(
         `In one concise sentence, explain why the top-ranked item is the best choice among the available options.
-    Focus only on rating and price comparison.
+Focus only on rating and price comparison.
 
-    Options:
-    ${lines}`
+Options:
+${lines}`
       );
     }
 
     // ─────────────────────────────────────────────
-    // DISCOVERY MODE (tests expect this)
+    // DISCOVERY MODE
     // ─────────────────────────────────────────────
     if (!ctx.providers?.commerce) {
-     return {
+      return {
         command: "shop",
         status: "ok",
         output: {
           input: intent.query,
           results,
           summary,
+          reasoning, // 👈 added here
         },
       };
-
     }
 
     // ─────────────────────────────────────────────
-    // EXECUTION MODE (purchase path)
+    // EXECUTION MODE
     // ─────────────────────────────────────────────
-    const provider = ctx.providers.commerce["amazon"];
-    if (!provider) {
-      return {
-        command: "shop",
-        status: "error",
-        output: "Commerce provider not available",
-      };
+    const commerceProviders = ctx.providers.commerce;
+    const providerEntries = Object.values(commerceProviders);
+
+    if (providerEntries.length === 0) {
+    return {
+      command: "shop",
+      status: "error",
+      output: "No commerce providers configured",
+    };
     }
+
+    if (providerEntries.length > 1) {
+    return {
+      command: "shop",
+      status: "error",
+      output: "Multiple commerce providers configured; provider selection required",
+    };
+    }
+
+    const provider = providerEntries[0];
+
 
     const selected = results[0];
 
@@ -126,10 +143,33 @@ export const shop: CommandHandler = {
         status: "error",
         output: "Purchase requires explicit confirmation",
       };
-    }
+    }1
+    const request = buildPurchaseRequest({
+      provider: provider.name,          
+      productId: product.productId,
+      maxTotalAmount: intent.maxTotalAmount,
+      confirmationToken: intent.confirmationToken,
+      shippingSpeed: "standard",
+    });
 
+    // execution policy (final safety gate)
+  if (ctx.executionPolicy) {
+  const decision = ctx.executionPolicy.allowPurchase({
+    provider: provider.name,
+    amount: product.price.amount,
+  });
 
-    const purchaseResult = await provider.purchase(buildPurchaseRequest(intent, product));
+  if (!decision.allowed) {
+    return {
+      command: "shop",
+      status: "error",
+      output: decision.reason ?? "Purchase blocked by execution policy",
+    };
+  }
+}
+
+    
+    const purchaseResult = await provider.purchase(request);
 
     return mapPurchaseResult(purchaseResult);
   },

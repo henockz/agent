@@ -4,7 +4,7 @@ import test from "node:test";
 
 test("PurchaseRequest contains no UI fields", () => {
   const req: PurchaseRequest = {
-    provider: "amazon",
+    provider: "mock-retailer",
     productId: "ASIN123",
     quantity: 1,
     deliveryAddressId: "ADDR-1",

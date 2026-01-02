@@ -1,0 +1,6 @@
+rm \
+  core/services/CategoryResolver.ts \
+  core/services/StaticCategoryResolver.ts \
+  core/services/DimensionPriorityService.ts \
+  core/services/StaticDimensionPriorityService.ts \
+  tests/core/services/DimensionPriorityService.unit.test.ts

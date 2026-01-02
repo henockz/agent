@@ -2,14 +2,13 @@ import type { PurchaseResult } from "@core/types/PurchaseResult.js";
 import assert from "node:assert";
 import test from "node:test";
 
-test("PurchaseResult failure shape is stable", () => {
+test("PurchaseResult error shape is stable", () => {
   const res: PurchaseResult = {
-    status: "failed",
-    provider: "amazon",
+    status: "error",
     reason: "PAYMENT_FAILED",
     message: "Card declined",
   };
 
-  assert.strictEqual(res.status, "failed");
+  assert.strictEqual(res.status, "error");
   assert.ok(res.reason);
 });

@@ -5,7 +5,7 @@ import test from "node:test";
 
 test("PurchaseRequest contract is stable", () => {
   const req: PurchaseRequest = {
-    provider: "amazon",
+    provider: "mock-retailer",
     productId: "ASIN123",
     quantity: 1,
     deliveryAddressId: "ADDR-1",
@@ -15,7 +15,7 @@ test("PurchaseRequest contract is stable", () => {
     userConfirmationToken: "CONFIRM-123",
   };
 
-  assert.strictEqual(req.provider, "amazon");
+  assert.strictEqual(req.provider, "mock-retailer");
   assert.ok(typeof req.productId === "string");
   assert.ok(typeof req.quantity === "number");
   assert.ok(typeof req.userConfirmationToken === "string");

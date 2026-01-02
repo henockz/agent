@@ -1,7 +1,6 @@
 export type PurchaseResult =
   | {
-      status: "success";
-      provider: "amazon";
+      status: "ok";
 
       orderId: string;
 
@@ -9,13 +8,12 @@ export type PurchaseResult =
       currency: string;
 
       estimatedDeliveryDate: string; // ISO
-
       purchasedAtIso: string;
+
       raw?: Record<string, unknown>;
     }
   | {
-      status: "failed";
-      provider: "amazon";
+      status: "error";
 
       reason:
         | "OUT_OF_STOCK"

@@ -9,7 +9,6 @@ export interface CommerceProvider {
   name: string;
   
   search(query: string): Promise<ProductHit[]>;
-  getProduct(productId: string): Promise<ResolvedProduct>;
-  
+  getProduct(productId: string): Promise<ResolvedProduct>;  
   purchase(request: PurchaseRequest): Promise<PurchaseResult>;
 }

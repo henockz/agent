@@ -11,8 +11,8 @@ test("shop blocks purchase without confirmation token", async () => {
         },
       },
       commerce: {
-        amazon: {
-          name: "amazon",
+        retailer: {
+          name: "mock-retailer",
           async search() { return []; },
           async getProduct() {
             return {
@@ -21,7 +21,7 @@ test("shop blocks purchase without confirmation token", async () => {
               availability: "in_stock",
               price: { amount: 99, currency: "USD" },
               shippingOptions: [],
-              seller: { id: "amz", name: "Amazon" },
+              seller: { id: "amz", name: "mock-retailer" },
             };
           },
           async purchase() {

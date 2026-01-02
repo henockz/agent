@@ -1,5 +1,5 @@
 export type PurchaseRequest = {
-  provider: "amazon";
+  provider: string;
 
   productId: string;        // ASIN (must be buyable)
   quantity: number;

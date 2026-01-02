@@ -1,13 +1,9 @@
+// services/RankingService.ts
 import { SearchResult } from "@core/types/SearchResult.js";
 
-// services/RankingService.ts
 export class RankingService {
 
-  rank(
-    items: SearchResult[],
-    limit: number,
-    preference: "budget" | "premium"
-  ): SearchResult[] {
+  rank(items: SearchResult[], limit: number, preference: "budget" | "premium"  ): SearchResult[] {
 
     const scored = items.map(r => ({
       r,

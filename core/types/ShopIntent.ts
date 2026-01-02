@@ -1,6 +1,7 @@
 export type ShopIntent = {
   rawQuery: string;
   query: string;
+  category?: string;
 
   quantity: number;
   maxTotalAmount?: number;
