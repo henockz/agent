@@ -1,4 +1,4 @@
-import { CommandContext } from "../types/CommandContext.js";
+import { CommandContext } from "../context/CommandContext.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
 
 

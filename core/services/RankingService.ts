@@ -1,9 +1,10 @@
 // services/RankingService.ts
 import { SearchResult } from "@core/types/SearchResult.js";
+import { ShoppingPreference } from "@core/types/ShoppingPrefrence.js";
 
 export class RankingService {
 
-  rank(items: SearchResult[], limit: number, preference: "budget" | "premium"  ): SearchResult[] {
+  rank(items: SearchResult[], limit: number, preference: ShoppingPreference ): SearchResult[] {
 
     const scored = items.map(r => ({
       r,
@@ -19,7 +20,7 @@ export class RankingService {
   // ─────────────────────────────────────────────
   // Scoring seam (EXACT current behavior)
   // ─────────────────────────────────────────────
-    private score(item: SearchResult,preference: "budget" | "premium"  ): number {
+    private score(item: SearchResult,preference: ShoppingPreference ): number {
 
     if (preference === "premium") {
       const reviewCount = item.reviewCount ?? 0;

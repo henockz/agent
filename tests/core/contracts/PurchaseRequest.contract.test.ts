@@ -1,22 +1,39 @@
 import type { PurchaseRequest } from "@core/types/PurchaseRequest.js";
 import assert from "node:assert";
 import test from "node:test";
-1
+
 
 test("PurchaseRequest contract is stable", () => {
   const req: PurchaseRequest = {
     provider: "mock-retailer",
     productId: "ASIN123",
     quantity: 1,
-    deliveryAddressId: "ADDR-1",
-    paymentMethodId: "PM-1",
     shippingSpeed: "standard",
-    maxTotalAmount: 150,
-    userConfirmationToken: "CONFIRM-123",
+    confirmationToken: "CONFIRM-123",
+    idempotencyKey: "IDEMP-123",
   };
 
+  // required execution fields
   assert.strictEqual(req.provider, "mock-retailer");
-  assert.ok(typeof req.productId === "string");
-  assert.ok(typeof req.quantity === "number");
-  assert.ok(typeof req.userConfirmationToken === "string");
+  assert.strictEqual(req.productId, "ASIN123");
+  assert.strictEqual(req.quantity, 1);
+  assert.strictEqual(req.shippingSpeed, "standard");
+  assert.strictEqual(req.confirmationToken, "CONFIRM-123");
+  assert.strictEqual(req.idempotencyKey, "IDEMP-123");
+
+  // ensure no policy / UI leakage
+  const forbidden = [
+    "maxTotalAmount",
+    "deliveryAddressId",
+    "paymentMethodId",
+    "label",
+    "summary",
+    "results",
+    "input",
+    "research",
+  ];
+
+  forbidden.forEach(f => {
+    assert.ok(!(f in (req as any)));
+  });
 });

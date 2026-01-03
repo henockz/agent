@@ -8,18 +8,13 @@ export type ProductHit = {
   provider: "serpapi-google-shopping";
   title: string;
   url: string;
-
   productId?: string;
   merchant?: string;
-
   price?: Money;
   oldPrice?: Money;
-
   rating?: number;
   reviewCount?: number;
-
   thumbnailUrl?: string;
-
   raw?: Record<string, unknown>;
 };
 

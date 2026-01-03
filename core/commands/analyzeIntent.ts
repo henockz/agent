@@ -1,6 +1,6 @@
+import type { CommandContext } from "../context/CommandContext.js";
 import { IntentAnalyzer } from "../services/IntentAnalyer.js";
 import type { AgentResult } from "../types/AgentResult.js";
-import type { CommandContext } from "../types/CommandContext.js";
 import type { CommandHandler } from "../types/CommandHandler.js";
 
 export const analyzeIntent: CommandHandler = {

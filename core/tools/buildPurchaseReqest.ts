@@ -1,21 +1,19 @@
 import type { PurchaseRequest } from "@core/types/PurchaseRequest.js";
+import { ShippingSpeed } from "@core/types/ShippingSpeed.js";
 
-export function buildPurchaseRequest(
-  input: {
-    provider: string;
-    productId: string;
-    maxTotalAmount?: number;
-    confirmationToken: string;
-    shippingSpeed: "standard" | "expedited" | "overnight";
-  }
-): PurchaseRequest {
+export function buildPurchaseRequest(input: {
+  provider: string;
+  productId: string;
+  confirmationToken: string;
+  shippingSpeed?: ShippingSpeed;
+  idempotencyKey: string;
+}): PurchaseRequest {
   return {
     provider: input.provider,
     productId: input.productId,
+    confirmationToken: input.confirmationToken,
+    shippingSpeed: input.shippingSpeed ?? "standard",
     quantity: 1,
-    shippingSpeed: input.shippingSpeed,
-    maxTotalAmount: input.maxTotalAmount,
-    userConfirmationToken: input.confirmationToken,
+    idempotencyKey: input.idempotencyKey,
   };
 }
-

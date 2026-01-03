@@ -7,13 +7,21 @@ test("PurchaseRequest contains no UI fields", () => {
     provider: "mock-retailer",
     productId: "ASIN123",
     quantity: 1,
-    deliveryAddressId: "ADDR-1",
-    paymentMethodId: "PM-1",
     shippingSpeed: "standard",
-    maxTotalAmount: 150,
-    userConfirmationToken: "CONFIRM-123",
+    confirmationToken: "CONFIRM-123",
+    idempotencyKey: "IDEMP-1",
   };
 
-  const forbidden = ["label", "summary", "results", "input", "research"];
+  const forbidden = [
+    "label",
+    "summary",
+    "results",
+    "input",
+    "research",
+    "deliveryAddressId",
+    "paymentMethodId",
+    "maxTotalAmount",
+  ];
+
   forbidden.forEach(f => assert.ok(!(f in (req as any))));
 });

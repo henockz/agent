@@ -1,6 +1,6 @@
 //config/environment/bootstrap.ts
 import type { ExecutionConfig } from "@config/ExecutionConfig.js";
-import type { CommandContext } from "@core/types/CommandContext.js";
+import type { CommandContext } from "@core/context/CommandContext.js";
 import { OpenAILLMClient } from "@llm/OpenLLMClient.js";
 import { MaxAmountExecutionPolicy } from "@services/MaxAmountExecutionPolicy.js";
 import { SerpApiGoogleShoppingProvider } from "@tools/providers/SerpApiGoogleShoppingProvider.js";
@@ -49,8 +49,16 @@ const executionPolicy = new MaxAmountExecutionPolicy(executionConfig);
 
 export const commandContext: CommandContext = {
   ...runtimeConfig,
+
+  mode: "discover",  
+
   executionPolicy,
+
   providers: process.env.SERPAPI_API_KEY
-    ? { search: new SerpApiGoogleShoppingProvider({ apiKey: process.env.SERPAPI_API_KEY }) }
+    ? {
+        search: new SerpApiGoogleShoppingProvider({
+          apiKey: process.env.SERPAPI_API_KEY,
+        }),
+      }
     : undefined,
 };
