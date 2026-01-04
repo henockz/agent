@@ -1,3 +1,4 @@
+import util from "node:util";
 import { ShopIntentContext } from "@core/context/ShopIntentContext.js";
 import type { AgentResult } from "@core/types/AgentResult.js";
 import type { CommandHandler } from "@core/types/CommandHandler.js";
@@ -6,6 +7,7 @@ import { RankingService } from "@services/RankingService.js";
 import { buildPurchaseRequest } from "@tools/buildPurchaseReqest.js";
 import { mapPurchaseResult } from "@tools/mapPurchaseResult.js";
 import { resolveShopIntent } from "@tools/resolveShopIntent.js";
+
 /**
  * EXECUTION INVARIANTS (v1)
  *
@@ -95,6 +97,7 @@ export const shop: CommandHandler = {
 
     // 3. Search
     const candidates = await searchProvider.search(intent.query);
+
     if (candidates.length === 0) {
       return {
         command: "shop",
@@ -102,20 +105,56 @@ export const shop: CommandHandler = {
         output: "No results found",
       };
     }
+ 
 
     // 4. Rank
-    const preference =
-      context.rankingPreference ??
-      (intent.query.includes("budget") ? "budget" : "premium");
+      const preference =context.rankingPreference ?? (intent.query.includes("budget") ? "budget" : "premium");
 
-    const rankingService = new RankingService();
-    const results = rankingService.rank(candidates, 3, preference);
+      
+      const rankingService = new RankingService();
+      const results = rankingService.rank(candidates, 3, preference);
+      
+      // ─────────────────────────────────────────────
+      // 5. Deterministic reasoning (non-LLM)
+      // ─────────────────────────────────────────────
 
-  // 5. Reasoning (to be produced as part of ExecutionPlan)
-  // Intentionally empty until ExecutionPlan is introduced
-  let reasoning: string | undefined;
+      let reasoning: string | undefined;
 
- 
+      const top = results[0];
+      const runnerUp = results[1];
+
+      if (top) {
+        const parts: string[] = [];
+        parts.push( `Ranked results using ${preference} preference based on rating, review volume, and price.` );
+
+      if (typeof top.reviewCount === "number") {
+        parts.push(`Top choice has ${top.rating}⭐ from ${top.reviewCount} reviews.`);
+      }
+
+      if (runnerUp) {
+        const ratingDelta =  (top.rating ?? 0) - (runnerUp.rating ?? 0);
+        const priceDelta = (runnerUp.price ?? 0) - (top.price ?? 0);
+
+        if (ratingDelta > 0 && priceDelta > 0) {
+          parts.push(`Top choice has a higher rating (+${ratingDelta.toFixed(1)}) and costs $${priceDelta.toFixed(2)} less than the next option.`);
+        } else if (ratingDelta > 0) {
+          parts.push(`Top choice has a higher rating (+${ratingDelta.toFixed(1)}) than the next option.`);
+        } else if (priceDelta > 0) {
+          parts.push(`Top choice costs $${priceDelta.toFixed(2)} less than the next option.`);
+        } else {
+          parts.push(`Top choice offers the best balance of rating and price among the options.`);
+        }
+      } else {
+        parts.push(`Only one candidate was available to compare.`);
+      }
+
+      reasoning = parts.join(" ");
+    }
+    executionPlan?.addStep({
+      name: "rank",
+      description: reasoning,
+    });
+
     // 6. Optional LLM summary
     let summary: string | undefined;
 
@@ -144,11 +183,20 @@ ${lines}`
         command: "shop",
         status: "ok",
         output: {
-          input: intent.query,
-          results,
-          summary,
-          reasoning, 
-        },
+            input: intent.query,
+            results: results.map(r => ({
+              id: r.id,
+              title: r.title,
+              price: r.price,
+              rating: r.rating,
+              reviewCount: r.raw?.reviewCount,
+              uri: r.uri,
+              raw: r.raw ? JSON.parse(JSON.stringify(r.raw)) : undefined,
+            })),
+            summary,
+            reasoning,
+          },
+
       };
     }
     if (context.mode === "execute" && !context.providers?.commerce) {
@@ -254,18 +302,31 @@ ${lines}`
   if (context.executionPolicy) {
     const decision =context.executionPolicy.allowPurchase({provider: provider.name,amount: product.price.amount });
 
-  if (!decision.allowed) {
-    return {
-      command: "shop",
-      status: "error",
-      output: decision.reason ?? "Purchase blocked by execution policy",
-    };
-  }
-}
+      if (!decision.allowed) {
+        return {
+          command: "shop",
+          status: "error",
+          output: decision.reason ?? "Purchase blocked by execution policy",
+        };
+      } 
+    }
+    if (context.dryRun === true) {
+      return {
+            command: "shop",
+            status: "ok",
+            output: {
+              executionType: "dry-run",
+              productId: product.productId,
+              price: product.price,
+              shippingSpeed: intent.shippingSpeed ?? "standard",
+              reasoning,  
+              message: "Dry run completed. No purchase executed.",
+            },
+          };
 
+      }    
     
     const purchaseResult = await provider.purchase(request);
-
     return mapPurchaseResult(purchaseResult);
   },
 };

@@ -17,6 +17,8 @@ export type CommandContext = RuntimeConfig & {
   useRanking?: boolean;
   preference?: ShoppingPreference;
   telemetry?: boolean;
+  dryRun?: boolean;
+
 
   // user intent inputs
   confirmationToken?: string;

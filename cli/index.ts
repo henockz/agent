@@ -1,3 +1,4 @@
+import util from "node:util";
 import { Agent } from "@agent/Agent.js";
 import { runtimeConfig } from "@config/environment/bootstrap.js";
 import { LLMSearchProvider } from "@tools/providers/LLMSearchProvider.js";
@@ -40,8 +41,9 @@ try {
     console.error(result.message);
     process.exit(1);
   }
+  console.dir(result.output, { depth: null });
 
-  console.log(result.output);
+  //console.log(result.output);
 } catch (err) {
   console.error("Fatal error:", (err as Error).message);
   process.exit(1);
